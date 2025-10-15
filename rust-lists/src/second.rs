@@ -1,18 +1,18 @@
-struct Node {
-    elem: i32,
-    next: Option<Box<Node>>,
+struct Node<T> {
+    elem: T,
+    next: Option<Box<Node<T>>>,
 }
 
-pub struct List {
-    head: Option<Box<Node>>,
+pub struct List<T> {
+    head: Option<Box<Node<T>>>,
 }
 
-impl List {
+impl<T> List<T> {
     pub fn new() -> Self {
         List { head: Option::None }
     }
 
-    pub fn push(&mut self, val: i32) {
+    pub fn push(&mut self, val: T) {
         let new_node = Option::Some(Box::new(Node {
             elem: val,
             next: self.head.take(),
@@ -20,7 +20,7 @@ impl List {
         self.head = new_node
     }
 
-    pub fn pop(&mut self) -> Option<i32> {
+    pub fn pop(&mut self) -> Option<T> {
         self.head.take().map(|node| {
             self.head = node.next;
             node.elem
