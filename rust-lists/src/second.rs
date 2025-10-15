@@ -26,6 +26,10 @@ impl<T> List<T> {
             node.elem
         })
     }
+
+    pub fn peek(&self) -> Option<&T> {
+        self.head.as_ref().map(|node| &node.elem)
+    }
 }
 
 #[cfg(test)]
@@ -44,6 +48,8 @@ mod test {
         list.push(2);
         list.push(3);
 
+        assert_eq!(list.peek(), Some(&3));
+
         // Check normal removal
         assert_eq!(list.pop(), Some(3));
         assert_eq!(list.pop(), Some(2));
@@ -59,5 +65,6 @@ mod test {
         // Check exhaustion
         assert_eq!(list.pop(), Some(1));
         assert_eq!(list.pop(), None);
+        assert_eq!(list.peek(), None);
     }
 }
