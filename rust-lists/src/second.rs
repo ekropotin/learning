@@ -48,6 +48,14 @@ impl<T> List<T> {
     }
 }
 
+impl<T> Drop for List<T> {
+    fn drop(&mut self) {
+        let mut curr = self.head.take();
+        while let Some(mut boxed_node) = curr {
+            curr = boxed_node.next.take()
+        }
+    }
+}
 // IntoIter
 pub struct IntoIter<T>(List<T>);
 
