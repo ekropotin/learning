@@ -130,6 +130,7 @@ impl<T> List<T> {
 mod test {
     use super::List;
 
+    #[test]
     fn test_basic() {
         let mut list = List::new();
         assert!(list.peek_front().is_none());
@@ -158,5 +159,34 @@ mod test {
         assert_eq!(list.pop_back(), Some(1));
         assert_eq!(list.pop_back(), None);
         assert!(list.peek_back().is_none());
+    }
+
+    #[test]
+    fn test_iterator() {
+        let mut list = List::new();
+        list.push_front(1);
+        list.push_front(2);
+        list.push_front(3);
+        list.push_front(4);
+
+        let mut iter = list.into_iter();
+        assert_eq!(iter.next(), Some(4));
+        assert_eq!(iter.next(), Some(3));
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), None);
+
+        let mut list = List::new();
+        list.push_front(1);
+        list.push_front(2);
+        list.push_front(3);
+        list.push_front(4);
+
+        let mut iter = list.into_iter();
+        assert_eq!(iter.next_back(), Some(1));
+        assert_eq!(iter.next_back(), Some(2));
+        assert_eq!(iter.next_back(), Some(3));
+        assert_eq!(iter.next_back(), Some(4));
+        assert_eq!(iter.next_back(), None);
     }
 }
