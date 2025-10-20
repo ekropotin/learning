@@ -4,12 +4,12 @@ use std::{
     rc::Rc,
 };
 
-type RcNode<T> = Rc<RefCell<Node<T>>>;
+type Link<T> = Option<Rc<RefCell<Node<T>>>>;
 
 struct Node<T> {
     elem: T,
-    next: Option<RcNode<T>>,
-    prev: Option<RcNode<T>>,
+    next: Link<T>,
+    prev: Link<T>,
 }
 
 impl<T> Node<T> {
@@ -23,8 +23,24 @@ impl<T> Node<T> {
 }
 
 pub struct List<T> {
-    head: Option<RcNode<T>>,
-    tail: Option<RcNode<T>>,
+    head: Link<T>,
+    tail: Link<T>,
+}
+
+struct IntoIter<T>(List<T>);
+
+impl<T> Iterator for IntoIter<T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.pop_front()
+    }
+}
+
+impl<T> DoubleEndedIterator for IntoIter<T> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        todo!()
+    }
 }
 
 impl<T> List<T> {
@@ -69,7 +85,24 @@ impl<T> List<T> {
             .as_ref()
             .map(|head| Ref::map(head.borrow(), |head| &head.elem))
     }
+
+    fn into_iter(self) -> IntoIter<T> {
+        IntoIter(self)
+    }
 }
 
 #[cfg(test)]
-mod test {}
+mod test {
+    use super::List;
+
+    fn test_front() {
+        let mut list = List::new();
+        list.push_front(1);
+        list.push_front(2);
+        assert_eq!(*list.peek_front().unwrap(), 2);
+        assert_eq!(list.pop_front(), Some(2));
+        assert_eq!(*list.peek_front().unwrap(), 1);
+        assert_eq!(list.pop_front(), Some(1));
+        assert_eq!(list.pop_front(), None);
+    }
+}
