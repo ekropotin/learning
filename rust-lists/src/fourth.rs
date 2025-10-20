@@ -38,7 +38,7 @@ impl<T> Iterator for IntoIter<T> {
 
 impl<T> DoubleEndedIterator for IntoIter<T> {
     fn next_back(&mut self) -> Option<Self::Item> {
-        todo!()
+        self.0.pop_back()
     }
 }
 
@@ -49,6 +49,42 @@ impl<T> List<T> {
             tail: None,
         }
     }
+    fn push_back(&mut self, val: T) {
+        let new_tail = Rc::new(RefCell::new(Node::new(val)));
+        match self.tail.take() {
+            Some(old_tail) => {
+                old_tail.borrow_mut().next = Some(new_tail.clone());
+                new_tail.borrow_mut().prev = Some(old_tail);
+                self.tail = Some(new_tail);
+            }
+            None => {
+                self.head = Some(new_tail.clone());
+                self.tail = Some(new_tail);
+            }
+        }
+    }
+
+    fn pop_back(&mut self) -> Option<T> {
+        self.tail.take().map(|old_tail| {
+            match old_tail.borrow_mut().prev.take() {
+                Some(new_tail) => {
+                    new_tail.borrow_mut().next.take();
+                    self.tail = Some(new_tail);
+                }
+                None => {
+                    self.head.take();
+                }
+            }
+            Rc::try_unwrap(old_tail).ok().unwrap().into_inner().elem
+        })
+    }
+
+    fn peek_back(&self) -> Option<Ref<T>> {
+        self.tail
+            .as_ref()
+            .map(|tail| Ref::map(tail.borrow(), |tail_ref| &tail_ref.elem))
+    }
+
     fn push_front(&mut self, val: T) {
         let new_head = Rc::new(RefCell::new(Node::new(val)));
         match self.head.take() {
@@ -94,14 +130,33 @@ impl<T> List<T> {
 mod test {
     use super::List;
 
-    fn test_front() {
+    fn test_basic() {
         let mut list = List::new();
+        assert!(list.peek_front().is_none());
+        assert!(list.peek_back().is_none());
+
         list.push_front(1);
+        assert_eq!(*list.peek_front().unwrap(), *list.peek_back().unwrap());
+
         list.push_front(2);
         assert_eq!(*list.peek_front().unwrap(), 2);
+        assert_eq!(*list.peek_back().unwrap(), 1);
+
         assert_eq!(list.pop_front(), Some(2));
         assert_eq!(*list.peek_front().unwrap(), 1);
         assert_eq!(list.pop_front(), Some(1));
         assert_eq!(list.pop_front(), None);
+        assert_eq!(list.pop_back(), None);
+        assert!(list.peek_front().is_none());
+        assert!(list.peek_back().is_none());
+
+        list.push_back(1);
+        list.push_back(2);
+        assert_eq!(*list.peek_back().unwrap(), 2);
+        assert_eq!(list.pop_back(), Some(2));
+        assert_eq!(*list.peek_back().unwrap(), 1);
+        assert_eq!(list.pop_back(), Some(1));
+        assert_eq!(list.pop_back(), None);
+        assert!(list.peek_back().is_none());
     }
 }
