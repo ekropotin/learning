@@ -1,6 +1,5 @@
 use std::{
     cell::{Ref, RefCell},
-    ops::Deref,
     rc::Rc,
 };
 
@@ -49,17 +48,6 @@ struct Iter<T> {
     next: Link<T>,
 }
 
-impl<'a, T: 'a> Iterator for Iter<T> {
-    type Item = Ref<'a, T>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.next.take().map(|next_rc| {
-            let borrow = next_rc.borrow(); // Ref<Node<T>>
-            self.next = borrow.next.clone(); // advance iterator
-            Ref::map(borrow, |node| &node.elem)
-        })
-    }
-}
 impl<T> List<T> {
     fn new() -> Self {
         Self {
